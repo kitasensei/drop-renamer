@@ -137,6 +137,8 @@
                               IsReadOnly="True"
                               SelectionMode="Extended"
                               SelectionUnit="FullRow"
+                              SelectionChanged="PreviewGrid_SelectionChanged"
+                              PreviewMouseLeftButtonDown="PreviewGrid_PreviewMouseLeftButtonDown"
                               GridLinesVisibility="Horizontal"
                               HeadersVisibility="Column"
                               BorderThickness="0"
@@ -176,9 +178,10 @@
                        Text="ファイルはまだ追加されていません。" />
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Margin="0,0,8,0"
+                <Button x:Name="ClearButton"
+                        Margin="0,0,8,0"
                         Click="ClearButton_Click"
-                        Content="選択項目をクリア"
+                        Content="一覧全体をクリア"
                         ToolTip="選択中の項目を一覧から削除します。未選択の場合は一覧全体を削除します。" />
                 <Button x:Name="ExecuteButton"
                         MinWidth="120"
