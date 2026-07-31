@@ -26,6 +26,15 @@ public sealed class RenamePlanService
                 continue;
             }
 
+            if (operationMode == FileOperationMode.Copy &&
+                AreSameDirectory(Path.GetDirectoryName(item.OriginalPath), targetFolder))
+            {
+                item.NewName = string.Empty;
+                item.DestinationPath = string.Empty;
+                item.Status = "対象外：コピー元と送り先が同じです";
+                continue;
+            }
+
             var folderName = new DirectoryInfo(targetFolder).Name;
             if (string.IsNullOrWhiteSpace(folderName))
             {
@@ -52,5 +61,17 @@ public sealed class RenamePlanService
             item.Status = "実行待ち";
         }
     }
-}
 
+    private static bool AreSameDirectory(string? firstPath, string? secondPath)
+    {
+        if (string.IsNullOrWhiteSpace(firstPath) || string.IsNullOrWhiteSpace(secondPath))
+        {
+            return false;
+        }
+
+        var normalizedFirst = Path.TrimEndingDirectorySeparator(Path.GetFullPath(firstPath));
+        var normalizedSecond = Path.TrimEndingDirectorySeparator(Path.GetFullPath(secondPath));
+
+        return string.Equals(normalizedFirst, normalizedSecond, StringComparison.OrdinalIgnoreCase);
+    }
+}

@@ -62,11 +62,19 @@
                                      Checked="OperationRadio_Checked" />
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2">
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
                         <TextBlock FontSize="15" FontWeight="SemiBold" Text="送り先フォルダー" />
                         <TreeView x:Name="FolderTree"
+                                  Grid.Row="1"
                                   Margin="0,9,0,0"
                                   ItemsSource="{Binding RootFolders}"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                                   SelectedItemChanged="FolderTree_SelectedItemChanged">
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type vm:FolderNode}" ItemsSource="{Binding Children}">
@@ -79,7 +87,7 @@
                                 </Style>
                             </TreeView.ItemContainerStyle>
                         </TreeView>
-                    </StackPanel>
+                    </Grid>
 
                     <Border Grid.Row="3"
                             Margin="0,12,0,0"

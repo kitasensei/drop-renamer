@@ -163,12 +163,16 @@ public partial class MainWindow : Window
             ? "ファイルはまだ追加されていません。"
             : $"{FileItems.Count}個のファイル（実行可能: {readyCount}個）";
 
-        ExecuteButton.IsEnabled = !_isExecuting && FileItems.Count > 0 && readyCount == FileItems.Count;
+        ExecuteButton.IsEnabled = !_isExecuting && readyCount > 0;
     }
 
     private async void ExecuteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_isExecuting || FileItems.Count == 0)
+        var readyItems = FileItems
+            .Where(item => !string.IsNullOrWhiteSpace(item.DestinationPath))
+            .ToList();
+
+        if (_isExecuting || readyItems.Count == 0)
         {
             return;
         }
@@ -181,7 +185,7 @@ public partial class MainWindow : Window
         };
 
         var answer = MessageBox.Show(
-            $"{FileItems.Count}個のファイルを{operationLabel}します。よろしいですか？",
+            $"{readyItems.Count}個のファイルを{operationLabel}します。よろしいですか？",
             "実行の確認",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Question);
@@ -196,11 +200,11 @@ public partial class MainWindow : Window
         var progress = new Progress<(FileRenameItem Item, string Status)>(
             update => update.Item.Status = update.Status);
 
-        await _fileOperationService.ExecuteAsync(FileItems, CurrentOperation, progress);
+        await _fileOperationService.ExecuteAsync(readyItems, CurrentOperation, progress);
 
         _isExecuting = false;
-        var totalCount = FileItems.Count;
-        var completedItems = FileItems
+        var totalCount = readyItems.Count;
+        var completedItems = readyItems
             .Where(item => item.Status == "完了")
             .ToList();
         var successCount = completedItems.Count;
