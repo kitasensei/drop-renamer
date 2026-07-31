@@ -7,7 +7,7 @@ public sealed class FileRenameItem : INotifyPropertyChanged
 {
     private string _newName = string.Empty;
     private string _destinationPath = string.Empty;
-    private string _status = "Waiting";
+    private string _status = "待機中";
 
     public FileRenameItem(string originalPath)
     {
