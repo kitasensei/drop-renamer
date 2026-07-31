@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,6 +16,7 @@ public partial class MainWindow : Window
     private readonly FileOperationService _fileOperationService = new();
     private readonly AppSettings _settings;
     private bool _isExecuting;
+    private ListSortDirection _originalNameSortDirection = ListSortDirection.Ascending;
 
     public MainWindow()
     {
@@ -25,6 +27,7 @@ public partial class MainWindow : Window
         LoadRootFolders();
         RestoreSettings();
         RefreshPlan();
+        OriginalNameColumn.SortDirection = _originalNameSortDirection;
     }
 
     public ObservableCollection<FolderNode> RootFolders { get; } = [];
@@ -91,6 +94,7 @@ public partial class MainWindow : Window
             }
         }
 
+        SortFileItems();
         RefreshPlan();
     }
 
@@ -196,6 +200,42 @@ public partial class MainWindow : Window
     private void PreviewGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         UpdateClearButton();
+    }
+
+    private void PreviewGrid_Sorting(object sender, DataGridSortingEventArgs e)
+    {
+        e.Handled = true;
+
+        _originalNameSortDirection =
+            e.Column.SortDirection == ListSortDirection.Ascending
+                ? ListSortDirection.Descending
+                : ListSortDirection.Ascending;
+        e.Column.SortDirection = _originalNameSortDirection;
+
+        SortFileItems();
+        RefreshPlan();
+    }
+
+    private void SortFileItems()
+    {
+        IEnumerable<FileRenameItem> orderedItems =
+            _originalNameSortDirection == ListSortDirection.Ascending
+                ? FileItems
+                    .OrderBy(item => item.OriginalName, StringComparer.CurrentCultureIgnoreCase)
+                    .ThenBy(item => item.OriginalPath, StringComparer.OrdinalIgnoreCase)
+                : FileItems
+                    .OrderByDescending(item => item.OriginalName, StringComparer.CurrentCultureIgnoreCase)
+                    .ThenByDescending(item => item.OriginalPath, StringComparer.OrdinalIgnoreCase);
+
+        var sortedItems = orderedItems.ToList();
+        for (var targetIndex = 0; targetIndex < sortedItems.Count; targetIndex++)
+        {
+            var currentIndex = FileItems.IndexOf(sortedItems[targetIndex]);
+            if (currentIndex != targetIndex)
+            {
+                FileItems.Move(currentIndex, targetIndex);
+            }
+        }
     }
 
     private void PreviewGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
