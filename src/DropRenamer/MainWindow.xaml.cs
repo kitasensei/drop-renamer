@@ -358,7 +358,7 @@ public partial class MainWindow : Window
     {
         ClearButton.Content = PreviewGrid.SelectedItems.Count > 0
             ? "Clear Selected"
-            : "Clear All";
+            : "Clear Entire List";
     }
 
     private void ClearButton_Click(object sender, RoutedEventArgs e)
