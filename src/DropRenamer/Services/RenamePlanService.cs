@@ -20,7 +20,7 @@ public sealed class RenamePlanService
             {
                 item.NewName = string.Empty;
                 item.DestinationPath = string.Empty;
-                item.Status = "Select a destination folder.";
+                item.Status = "送り先を選択してください";
                 continue;
             }
 
@@ -35,7 +35,7 @@ public sealed class RenamePlanService
             {
                 item.NewName = string.Empty;
                 item.DestinationPath = string.Empty;
-                item.Status = "Already renamed.";
+                item.Status = "リネーム済みです";
                 continue;
             }
 
@@ -56,7 +56,7 @@ public sealed class RenamePlanService
             reservedPaths.Add(destinationPath);
             item.NewName = newName;
             item.DestinationPath = destinationPath;
-            item.Status = "Ready";
+            item.Status = "実行待ち";
         }
     }
 
