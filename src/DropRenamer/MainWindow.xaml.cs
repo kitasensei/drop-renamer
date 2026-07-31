@@ -245,7 +245,7 @@ public partial class MainWindow : Window
 
     private void UpdateDestinationDisplay()
     {
-        DestinationText.Text = SelectedDestination ?? "No destination folder selected";
+        DestinationText.Text = SelectedDestination ?? "送り先が選択されていません";
     }
 
     private void RefreshPlan()
@@ -254,8 +254,8 @@ public partial class MainWindow : Window
 
         var readyCount = FileItems.Count(item => !string.IsNullOrWhiteSpace(item.DestinationPath));
         SummaryText.Text = FileItems.Count == 0
-            ? "No files have been added yet."
-            : $"Files: {FileItems.Count} (ready: {readyCount})";
+            ? "ファイルはまだ追加されていません。"
+            : $"{FileItems.Count}個のファイル（実行可能: {readyCount}個）";
 
         ExecuteButton.IsEnabled = !_isExecuting && readyCount > 0;
     }
@@ -281,7 +281,7 @@ public partial class MainWindow : Window
         _isExecuting = false;
         var totalCount = readyItems.Count;
         var completedItems = readyItems
-            .Where(item => item.Status == "Completed")
+            .Where(item => item.Status == "完了")
             .ToList();
         var successCount = completedItems.Count;
         var failureCount = totalCount - successCount;
@@ -295,8 +295,8 @@ public partial class MainWindow : Window
         UpdateClearButton();
         ExecuteButton.IsEnabled = failureCount > 0;
         SummaryText.Text = failureCount == 0
-            ? $"Completed: {successCount}."
-            : $"Completed: {successCount}. Failed: {failureCount}.";
+            ? $"{successCount}個の処理が完了しました。"
+            : $"{successCount}個の処理が完了しました。{failureCount}個の処理に失敗しました。";
     }
 
     private void PreviewGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -357,8 +357,8 @@ public partial class MainWindow : Window
     private void UpdateClearButton()
     {
         ClearButton.Content = PreviewGrid.SelectedItems.Count > 0
-            ? "Clear Selected"
-            : "Clear Entire List";
+            ? "選択項目をクリア"
+            : "一覧全体をクリア";
     }
 
     private void ClearButton_Click(object sender, RoutedEventArgs e)
