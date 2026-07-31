@@ -165,21 +165,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        var operationLabel = CurrentOperation == FileOperationMode.Move
-            ? "移動"
-            : "コピー";
-
-        var answer = MessageBox.Show(
-            $"{readyItems.Count}個のファイルを{operationLabel}します。よろしいですか？",
-            "実行の確認",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
-
-        if (answer != MessageBoxResult.OK)
-        {
-            return;
-        }
-
         _isExecuting = true;
         ExecuteButton.IsEnabled = false;
         var progress = new Progress<(FileRenameItem Item, string Status)>(
@@ -193,20 +178,45 @@ public partial class MainWindow : Window
             .Where(item => item.Status == "完了")
             .ToList();
         var successCount = completedItems.Count;
-
-        SummaryText.Text = $"完了: {successCount} / {totalCount}個";
-        MessageBox.Show(
-            $"{successCount}個のファイルを処理しました。",
-            "処理結果",
-            MessageBoxButton.OK,
-            successCount == totalCount ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        var failureCount = totalCount - successCount;
 
         foreach (var item in completedItems)
         {
             FileItems.Remove(item);
         }
 
-        RefreshPlan();
+        PreviewGrid.UnselectAll();
+        UpdateClearButton();
+        ExecuteButton.IsEnabled = failureCount > 0;
+        SummaryText.Text = failureCount == 0
+            ? $"{successCount}個の処理が完了しました。"
+            : $"{successCount}個の処理が完了しました。{failureCount}個の処理に失敗しました。";
+    }
+
+    private void PreviewGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateClearButton();
+    }
+
+    private void PreviewGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source)
+        {
+            return;
+        }
+
+        var clickedRow = ItemsControl.ContainerFromElement(PreviewGrid, source) as DataGridRow;
+        if (clickedRow is null)
+        {
+            PreviewGrid.UnselectAll();
+        }
+    }
+
+    private void UpdateClearButton()
+    {
+        ClearButton.Content = PreviewGrid.SelectedItems.Count > 0
+            ? "選択項目をクリア"
+            : "一覧全体をクリア";
     }
 
     private void ClearButton_Click(object sender, RoutedEventArgs e)
@@ -232,6 +242,8 @@ public partial class MainWindow : Window
             }
         }
 
+        PreviewGrid.UnselectAll();
+        UpdateClearButton();
         RefreshPlan();
     }
 
