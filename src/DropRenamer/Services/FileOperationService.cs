@@ -26,7 +26,7 @@ public sealed class FileOperationService
                 {
                     if (File.Exists(item.DestinationPath))
                     {
-                        throw new IOException("A file with the same name already exists."));
+                        throw new IOException("A file with the same name already exists.");
                     }
 
                     if (operationMode == FileOperationMode.Copy)
