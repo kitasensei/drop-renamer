@@ -1,10 +1,14 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace DropRenamer.ViewModels;
 
-public sealed class FolderNode
+public sealed class FolderNode : INotifyPropertyChanged
 {
     private bool _childrenLoaded;
+    private bool _isExpanded;
+    private bool _isSelected;
 
     public FolderNode(string fullPath, string? displayName = null)
     {
@@ -31,6 +35,38 @@ public sealed class FolderNode
     public bool IsPlaceholder { get; }
 
     public ObservableCollection<FolderNode> Children { get; } = [];
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            if (_isExpanded == value)
+            {
+                return;
+            }
+
+            _isExpanded = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected == value)
+            {
+                return;
+            }
+
+            _isSelected = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public void LoadChildren()
     {
@@ -88,5 +124,9 @@ public sealed class FolderNode
         var name = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar));
         return string.IsNullOrWhiteSpace(name) ? path : name;
     }
-}
 
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
