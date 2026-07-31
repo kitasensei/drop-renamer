@@ -32,11 +32,9 @@ public partial class MainWindow : Window
     public ObservableCollection<FileRenameItem> FileItems { get; } = [];
 
     private FileOperationMode CurrentOperation =>
-        RenameRadio.IsChecked == true
-            ? FileOperationMode.RenameInPlace
-            : MoveRadio.IsChecked == true
-                ? FileOperationMode.Move
-                : FileOperationMode.Copy;
+        MoveRadio.IsChecked == true
+            ? FileOperationMode.Move
+            : FileOperationMode.Copy;
 
     private string? SelectedDestination { get; set; }
 
@@ -58,9 +56,6 @@ public partial class MainWindow : Window
         {
             case FileOperationMode.Move:
                 MoveRadio.IsChecked = true;
-                break;
-            case FileOperationMode.RenameInPlace:
-                RenameRadio.IsChecked = true;
                 break;
             default:
                 CopyRadio.IsChecked = true;
@@ -137,7 +132,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        FolderTree.IsEnabled = CurrentOperation != FileOperationMode.RenameInPlace;
         SaveSettings();
         UpdateDestinationDisplay();
         RefreshPlan();
@@ -145,12 +139,6 @@ public partial class MainWindow : Window
 
     private void UpdateDestinationDisplay()
     {
-        if (CurrentOperation == FileOperationMode.RenameInPlace)
-        {
-            DestinationText.Text = "各ファイルの現在のフォルダー";
-            return;
-        }
-
         DestinationText.Text = SelectedDestination ?? "送り先が選択されていません";
     }
 
@@ -177,12 +165,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        var operationLabel = CurrentOperation switch
-        {
-            FileOperationMode.Copy => "コピー",
-            FileOperationMode.Move => "移動",
-            _ => "名前変更"
-        };
+        var operationLabel = CurrentOperation == FileOperationMode.Move
+            ? "移動"
+            : "コピー";
 
         var answer = MessageBox.Show(
             $"{readyItems.Count}個のファイルを{operationLabel}します。よろしいですか？",
@@ -231,7 +216,22 @@ public partial class MainWindow : Window
             return;
         }
 
-        FileItems.Clear();
+        var selectedItems = PreviewGrid.SelectedItems
+            .Cast<FileRenameItem>()
+            .ToList();
+
+        if (selectedItems.Count == 0)
+        {
+            FileItems.Clear();
+        }
+        else
+        {
+            foreach (var item in selectedItems)
+            {
+                FileItems.Remove(item);
+            }
+        }
+
         RefreshPlan();
     }
 
