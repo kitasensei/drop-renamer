@@ -10,7 +10,5 @@ public sealed class AppSettings
 public enum FileOperationMode
 {
     Copy,
-    Move,
-    RenameInPlace
+    Move
 }
-
