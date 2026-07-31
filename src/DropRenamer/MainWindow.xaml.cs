@@ -199,15 +199,25 @@ public partial class MainWindow : Window
         await _fileOperationService.ExecuteAsync(FileItems, CurrentOperation, progress);
 
         _isExecuting = false;
-        var successCount = FileItems.Count(item => item.Status == "完了");
-        SummaryText.Text = $"完了: {successCount} / {FileItems.Count}個";
+        var totalCount = FileItems.Count;
+        var completedItems = FileItems
+            .Where(item => item.Status == "完了")
+            .ToList();
+        var successCount = completedItems.Count;
+
+        SummaryText.Text = $"完了: {successCount} / {totalCount}個";
         MessageBox.Show(
             $"{successCount}個のファイルを処理しました。",
             "処理結果",
             MessageBoxButton.OK,
-            successCount == FileItems.Count ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            successCount == totalCount ? MessageBoxImage.Information : MessageBoxImage.Warning);
 
-        ExecuteButton.IsEnabled = false;
+        foreach (var item in completedItems)
+        {
+            FileItems.Remove(item);
+        }
+
+        RefreshPlan();
     }
 
     private void ClearButton_Click(object sender, RoutedEventArgs e)
