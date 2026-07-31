@@ -56,10 +56,6 @@
                                      Margin="0,4"
                                      Content="移動"
                                      Checked="OperationRadio_Checked" />
-                        <RadioButton x:Name="RenameRadio"
-                                     Margin="0,4"
-                                     Content="現在のフォルダーで名前変更"
-                                     Checked="OperationRadio_Checked" />
                     </StackPanel>
 
                     <Grid Grid.Row="2">
@@ -139,14 +135,29 @@
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
                               IsReadOnly="True"
+                              SelectionMode="Extended"
+                              SelectionUnit="FullRow"
                               GridLinesVisibility="Horizontal"
                               HeadersVisibility="Column"
-                              BorderThickness="0">
+                              BorderThickness="0"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Width="1.1*" Header="元のファイル名" Binding="{Binding OriginalName}" />
-                            <DataGridTextColumn Width="1.1*" Header="変更後" Binding="{Binding NewName}" />
-                            <DataGridTextColumn Width="1.6*" Header="保存場所" Binding="{Binding DestinationPath}" />
-                            <DataGridTextColumn Width="0.8*" Header="状態" Binding="{Binding Status}" />
+                            <DataGridTextColumn Width="220" Header="元のファイル名" Binding="{Binding OriginalName}" />
+                            <DataGridTextColumn Width="220" Header="変更後" Binding="{Binding NewName}" />
+                            <DataGridTextColumn Width="420" Header="保存場所" Binding="{Binding DestinationPath}" />
+                            <DataGridTextColumn Width="250" Header="状態" Binding="{Binding Status}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}"
+                                                         Value="対象外：コピー元と送り先が同じです">
+                                                <Setter Property="Background" Value="#FFFFE5E5" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -167,7 +178,8 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Margin="0,0,8,0"
                         Click="ClearButton_Click"
-                        Content="一覧をクリア" />
+                        Content="選択項目をクリア"
+                        ToolTip="選択中の項目を一覧から削除します。未選択の場合は一覧全体を削除します。" />
                 <Button x:Name="ExecuteButton"
                         MinWidth="120"
                         Background="{StaticResource AccentBrush}"
