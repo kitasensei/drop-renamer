@@ -7,6 +7,10 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>DropRenamer</AssemblyName>
     <RootNamespace>DropRenamer</RootNamespace>
+    <ApplicationIcon>DropRenamer.ico</ApplicationIcon>
   </PropertyGroup>
-</Project>
 
+  <ItemGroup>
+    <Resource Include="DropRenamer.ico" />
+  </ItemGroup>
+</Project>
