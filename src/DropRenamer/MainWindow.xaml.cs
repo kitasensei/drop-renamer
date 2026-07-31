@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using DropRenamer.Models;
 using DropRenamer.Services;
 using DropRenamer.ViewModels;
@@ -66,6 +67,107 @@ public partial class MainWindow : Window
         }
 
         UpdateDestinationDisplay();
+        RestoreFolderTreeSelection();
+    }
+
+    private void RestoreFolderTreeSelection()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedDestination))
+        {
+            return;
+        }
+
+        var currentNode = RootFolders.FirstOrDefault(
+            node => IsSameOrAncestor(node.FullPath, SelectedDestination));
+        if (currentNode is null)
+        {
+            return;
+        }
+
+        while (!PathsEqual(currentNode.FullPath, SelectedDestination))
+        {
+            currentNode.LoadChildren();
+            currentNode.IsExpanded = true;
+
+            var nextNode = currentNode.Children.FirstOrDefault(
+                node => !node.IsPlaceholder
+                        && IsSameOrAncestor(node.FullPath, SelectedDestination));
+            if (nextNode is null)
+            {
+                return;
+            }
+
+            currentNode = nextNode;
+        }
+
+        currentNode.IsSelected = true;
+        var selectedNode = currentNode;
+        Dispatcher.BeginInvoke(
+            DispatcherPriority.Loaded,
+            new Action(() => BringFolderIntoView(selectedNode)));
+    }
+
+    private void BringFolderIntoView(FolderNode selectedNode)
+    {
+        FolderTree.UpdateLayout();
+
+        if (FindTreeViewItem(FolderTree, selectedNode) is { } container)
+        {
+            container.BringIntoView();
+        }
+    }
+
+    private static TreeViewItem? FindTreeViewItem(
+        ItemsControl parent,
+        FolderNode selectedNode)
+    {
+        foreach (var item in parent.Items)
+        {
+            if (parent.ItemContainerGenerator.ContainerFromItem(item)
+                is not TreeViewItem container)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(container.DataContext, selectedNode))
+            {
+                return container;
+            }
+
+            if (container.IsExpanded
+                && FindTreeViewItem(container, selectedNode) is { } descendant)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsSameOrAncestor(string ancestorPath, string targetPath)
+    {
+        try
+        {
+            var relativePath = Path.GetRelativePath(ancestorPath, targetPath);
+            return relativePath == "."
+                   || (!Path.IsPathRooted(relativePath)
+                       && relativePath != ".."
+                       && !relativePath.StartsWith(
+                           $"..{Path.DirectorySeparatorChar}",
+                           StringComparison.Ordinal));
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private static bool PathsEqual(string leftPath, string rightPath)
+    {
+        return string.Equals(
+            Path.TrimEndingDirectorySeparator(leftPath),
+            Path.TrimEndingDirectorySeparator(rightPath),
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private void Window_DragOver(object sender, DragEventArgs e)
