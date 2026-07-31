@@ -11,7 +11,15 @@
         AllowDrop="True"
         DragOver="Window_DragOver"
         Drop="Window_Drop">
-    <Grid Margin="18">
+    <Border Padding="7">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="#155D36" />
+                <GradientStop Offset="0.5" Color="#2E8B57" />
+                <GradientStop Offset="1" Color="#72B86B" />
+            </LinearGradientBrush>
+        </Border.Background>
+        <Grid Margin="14" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -43,7 +51,6 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBlock FontSize="15" FontWeight="SemiBold" Text="処理方法" />
@@ -61,12 +68,26 @@
                     <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <TextBlock FontSize="15" FontWeight="SemiBold" Text="送り先フォルダー" />
+                        <Border Grid.Row="1"
+                                Margin="0,7,0,0"
+                                Padding="8"
+                                Background="White"
+                                BorderBrush="#D8DEE8"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <TextBlock x:Name="DestinationText"
+                                       Foreground="#3C4655"
+                                       Text="送り先が選択されていません"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                        </Border>
                         <TreeView x:Name="FolderTree"
-                                  Grid.Row="1"
+                                  Grid.Row="2"
                                   Margin="0,9,0,0"
                                   ItemsSource="{Binding RootFolders}"
                                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -79,25 +100,15 @@
                             </TreeView.Resources>
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsExpanded"
+                                            Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                    <Setter Property="IsSelected"
+                                            Value="{Binding IsSelected, Mode=TwoWay}" />
                                     <EventSetter Event="Expanded" Handler="FolderItem_Expanded" />
                                 </Style>
                             </TreeView.ItemContainerStyle>
                         </TreeView>
                     </Grid>
-
-                    <Border Grid.Row="3"
-                            Margin="0,12,0,0"
-                            Padding="8"
-                            Background="White"
-                            BorderBrush="#D8DEE8"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                        <TextBlock x:Name="DestinationText"
-                                   Foreground="#3C4655"
-                                   Text="送り先が選択されていません"
-                                   TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
-                    </Border>
                 </Grid>
             </Border>
 
@@ -224,13 +235,21 @@
                         ToolTip="選択中の項目を一覧から削除します。未選択の場合は一覧全体を削除します。" />
                 <Button x:Name="ExecuteButton"
                         MinWidth="120"
-                        Background="{StaticResource AccentBrush}"
                         Foreground="White"
                         FontWeight="SemiBold"
                         Click="ExecuteButton_Click"
                         Content="実行"
-                        IsEnabled="False" />
+                        IsEnabled="False">
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="#155D36" />
+                            <GradientStop Offset="0.55" Color="#2E8B57" />
+                            <GradientStop Offset="1" Color="#72B86B" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
             </StackPanel>
         </Grid>
-    </Grid>
+        </Grid>
+    </Border>
 </Window>
