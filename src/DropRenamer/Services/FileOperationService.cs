@@ -16,7 +16,7 @@ public sealed class FileOperationService
 
             if (string.IsNullOrWhiteSpace(item.DestinationPath))
             {
-                progress.Report((item, "Destination folder is not set."));
+                progress.Report((item, "送り先が未設定です"));
                 continue;
             }
 
@@ -26,7 +26,7 @@ public sealed class FileOperationService
                 {
                     if (File.Exists(item.DestinationPath))
                     {
-                        throw new IOException("A file with the same name already exists.");
+                        throw new IOException("同名のファイルがすでに存在します。");
                     }
 
                     var sourceFolder = Path.GetDirectoryName(item.OriginalPath);
@@ -43,11 +43,11 @@ public sealed class FileOperationService
                     }
                 }, cancellationToken);
 
-                progress.Report((item, "Completed"));
+                progress.Report((item, "完了"));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                progress.Report((item, $"Error: {ex.Message}"));
+                progress.Report((item, $"エラー: {ex.Message}"));
             }
         }
     }
