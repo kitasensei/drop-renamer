@@ -1,6 +1,7 @@
 <Window x:Class="DropRenamer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:DropRenamer.ViewModels"
         Title="ドロップリネーマー"
         Width="1040"
         Height="700"
@@ -68,7 +69,7 @@
                                   ItemsSource="{Binding RootFolders}"
                                   SelectedItemChanged="FolderTree_SelectedItemChanged">
                             <TreeView.Resources>
-                                <HierarchicalDataTemplate DataType="{x:Type Object}" ItemsSource="{Binding Children}">
+                                <HierarchicalDataTemplate DataType="{x:Type vm:FolderNode}" ItemsSource="{Binding Children}">
                                     <TextBlock Text="{Binding DisplayName}" />
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>
@@ -171,4 +172,3 @@
         </Grid>
     </Grid>
 </Window>
-
