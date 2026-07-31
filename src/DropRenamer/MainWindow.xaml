@@ -139,27 +139,66 @@
                               SelectionUnit="FullRow"
                               SelectionChanged="PreviewGrid_SelectionChanged"
                               PreviewMouseLeftButtonDown="PreviewGrid_PreviewMouseLeftButtonDown"
+                              Sorting="PreviewGrid_Sorting"
                               GridLinesVisibility="Horizontal"
                               HeadersVisibility="Column"
                               BorderThickness="0"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Resources>
+                            <Style x:Key="PreviewCellStyle" TargetType="{x:Type DataGridCell}">
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style x:Key="ExcludedPreviewCellStyle"
+                                   BasedOn="{StaticResource PreviewCellStyle}"
+                                   TargetType="{x:Type DataGridCell}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}"
+                                                 Value="対象外：コピー元と送り先が同じです">
+                                        <Setter Property="Background" Value="#FFFFE5E5" />
+                                    </DataTrigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.CellStyle>
+                            <StaticResource ResourceKey="PreviewCellStyle" />
+                        </DataGrid.CellStyle>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Width="220" Header="元のファイル名" Binding="{Binding OriginalName}" />
-                            <DataGridTextColumn Width="220" Header="変更後" Binding="{Binding NewName}" />
-                            <DataGridTextColumn Width="420" Header="保存場所" Binding="{Binding DestinationPath}" />
-                            <DataGridTextColumn Width="250" Header="状態" Binding="{Binding Status}">
-                                <DataGridTextColumn.CellStyle>
-                                    <Style TargetType="DataGridCell">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Status}"
-                                                         Value="対象外：コピー元と送り先が同じです">
-                                                <Setter Property="Background" Value="#FFFFE5E5" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.CellStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="OriginalNameColumn"
+                                                Width="220"
+                                                Header="元のファイル名"
+                                                Binding="{Binding OriginalName}"
+                                                CanUserSort="True"
+                                                SortMemberPath="OriginalName"
+                                                CellStyle="{StaticResource ExcludedPreviewCellStyle}" />
+                            <DataGridTextColumn Width="220"
+                                                Header="変更後"
+                                                Binding="{Binding NewName}"
+                                                CanUserSort="False" />
+                            <DataGridTextColumn Width="420"
+                                                Header="保存場所"
+                                                Binding="{Binding DestinationPath}"
+                                                CanUserSort="False" />
+                            <DataGridTextColumn Width="250"
+                                                Header="状態"
+                                                Binding="{Binding Status}"
+                                                CanUserSort="False"
+                                                CellStyle="{StaticResource ExcludedPreviewCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
