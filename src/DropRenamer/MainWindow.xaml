@@ -164,22 +164,6 @@
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
-                            <Style x:Key="ExcludedPreviewCellStyle"
-                                   BasedOn="{StaticResource PreviewCellStyle}"
-                                   TargetType="{x:Type DataGridCell}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Status}"
-                                                 Value="Excluded: Source and destination folders are the same.">
-                                        <Setter Property="Background" Value="#FFFFE5E5" />
-                                    </DataTrigger>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background"
-                                                Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                                        <Setter Property="Foreground"
-                                                Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
                         </DataGrid.Resources>
                         <DataGrid.CellStyle>
                             <StaticResource ResourceKey="PreviewCellStyle" />
@@ -190,8 +174,7 @@
                                                 Header="Original Name"
                                                 Binding="{Binding OriginalName}"
                                                 CanUserSort="True"
-                                                SortMemberPath="OriginalName"
-                                                CellStyle="{StaticResource ExcludedPreviewCellStyle}" />
+                                                SortMemberPath="OriginalName" />
                             <DataGridTextColumn Width="220"
                                                 Header="New Name"
                                                 Binding="{Binding NewName}"
@@ -203,8 +186,7 @@
                             <DataGridTextColumn Width="250"
                                                 Header="Status"
                                                 Binding="{Binding Status}"
-                                                CanUserSort="False"
-                                                CellStyle="{StaticResource ExcludedPreviewCellStyle}" />
+                                                CanUserSort="False" />
                         </DataGrid.Columns>
                     </DataGrid>
             </Border>

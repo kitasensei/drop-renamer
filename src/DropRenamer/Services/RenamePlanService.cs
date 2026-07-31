@@ -24,15 +24,6 @@ public sealed class RenamePlanService
                 continue;
             }
 
-            if (operationMode == FileOperationMode.Copy &&
-                AreSameDirectory(Path.GetDirectoryName(item.OriginalPath), targetFolder))
-            {
-                item.NewName = string.Empty;
-                item.DestinationPath = string.Empty;
-                item.Status = "Excluded: Source and destination folders are the same.";
-                continue;
-            }
-
             var folderName = new DirectoryInfo(targetFolder).Name;
             if (string.IsNullOrWhiteSpace(folderName))
             {
@@ -60,16 +51,4 @@ public sealed class RenamePlanService
         }
     }
 
-    private static bool AreSameDirectory(string? firstPath, string? secondPath)
-    {
-        if (string.IsNullOrWhiteSpace(firstPath) || string.IsNullOrWhiteSpace(secondPath))
-        {
-            return false;
-        }
-
-        var normalizedFirst = Path.TrimEndingDirectorySeparator(Path.GetFullPath(firstPath));
-        var normalizedSecond = Path.TrimEndingDirectorySeparator(Path.GetFullPath(secondPath));
-
-        return string.Equals(normalizedFirst, normalizedSecond, StringComparison.OrdinalIgnoreCase);
-    }
 }

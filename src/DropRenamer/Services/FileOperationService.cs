@@ -29,7 +29,11 @@ public sealed class FileOperationService
                         throw new IOException("A file with the same name already exists.");
                     }
 
-                    if (operationMode == FileOperationMode.Copy)
+                    var sourceFolder = Path.GetDirectoryName(item.OriginalPath);
+                    var destinationFolder = Path.GetDirectoryName(item.DestinationPath);
+                    var renameInPlace = AreSameDirectory(sourceFolder, destinationFolder);
+
+                    if (operationMode == FileOperationMode.Copy && !renameInPlace)
                     {
                         File.Copy(item.OriginalPath, item.DestinationPath, overwrite: false);
                     }
@@ -46,5 +50,18 @@ public sealed class FileOperationService
                 progress.Report((item, $"Error: {ex.Message}"));
             }
         }
+    }
+
+    private static bool AreSameDirectory(string? firstPath, string? secondPath)
+    {
+        if (string.IsNullOrWhiteSpace(firstPath) || string.IsNullOrWhiteSpace(secondPath))
+        {
+            return false;
+        }
+
+        var normalizedFirst = Path.TrimEndingDirectorySeparator(Path.GetFullPath(firstPath));
+        var normalizedSecond = Path.TrimEndingDirectorySeparator(Path.GetFullPath(secondPath));
+
+        return string.Equals(normalizedFirst, normalizedSecond, StringComparison.OrdinalIgnoreCase);
     }
 }
