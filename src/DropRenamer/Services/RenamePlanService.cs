@@ -14,9 +14,7 @@ public sealed class RenamePlanService
 
         foreach (var item in items)
         {
-            var targetFolder = operationMode == FileOperationMode.RenameInPlace
-                ? Path.GetDirectoryName(item.OriginalPath)
-                : selectedDestination;
+            var targetFolder = selectedDestination;
 
             if (string.IsNullOrWhiteSpace(targetFolder) || !Directory.Exists(targetFolder))
             {
