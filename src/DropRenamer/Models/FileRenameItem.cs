@@ -7,7 +7,7 @@ public sealed class FileRenameItem : INotifyPropertyChanged
 {
     private string _newName = string.Empty;
     private string _destinationPath = string.Empty;
-    private string _status = "待機中";
+    private string _status = "Waiting";
 
     public FileRenameItem(string originalPath)
     {
@@ -49,4 +49,3 @@ public sealed class FileRenameItem : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
-

@@ -20,7 +20,7 @@ public sealed class RenamePlanService
             {
                 item.NewName = string.Empty;
                 item.DestinationPath = string.Empty;
-                item.Status = "送り先を選択してください";
+                item.Status = "Select a destination folder.";
                 continue;
             }
 
@@ -29,7 +29,7 @@ public sealed class RenamePlanService
             {
                 item.NewName = string.Empty;
                 item.DestinationPath = string.Empty;
-                item.Status = "対象外：コピー元と送り先が同じです";
+                item.Status = "Excluded: Source and destination folders are the same.";
                 continue;
             }
 
@@ -56,7 +56,7 @@ public sealed class RenamePlanService
             reservedPaths.Add(destinationPath);
             item.NewName = newName;
             item.DestinationPath = destinationPath;
-            item.Status = "実行待ち";
+            item.Status = "Ready";
         }
     }
 
