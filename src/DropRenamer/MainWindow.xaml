@@ -224,7 +224,7 @@
                 <Button x:Name="ClearButton"
                         Margin="0,0,8,0"
                         Click="ClearButton_Click"
-                        Content="Clear All"
+                        Content="Clear Entire List"
                         ToolTip="Remove selected items from the list. If nothing is selected, clear the entire list." />
                 <Button x:Name="ExecuteButton"
                         MinWidth="120"
