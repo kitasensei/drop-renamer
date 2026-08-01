@@ -158,6 +158,9 @@
                                 <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}" Value="Rename (same folder)">
+                                        <Setter Property="Foreground" Value="#D97706" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding Status}" Value="Already renamed.">
                                         <Setter Property="Foreground" Value="#C62828" />
                                     </DataTrigger>
