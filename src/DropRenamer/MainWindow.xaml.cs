@@ -112,7 +112,7 @@ public partial class MainWindow : Window
 
     private void RestoreDetailColumnLayout()
     {
-        var columnsByKey = GetDetailColumns().ToDictionary(entry => entry.Key);
+        var columnsByKey = GetDetailColumns().ToDictionary(entry => entry.Key, entry => entry.Column);
         var validSettings = (_settings.DetailColumns ?? [])
             .Where(setting => columnsByKey.ContainsKey(setting.Key)
                               && double.IsFinite(setting.Width)
