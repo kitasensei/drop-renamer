@@ -1,0 +1,82 @@
+name: Build and publish Japanese v1.0.0
+
+on:
+  push:
+    branches:
+      - JP
+    paths:
+      - ".github/workflows/release-jp-v1.0.0.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out Japanese source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore .\DropRenamer.sln
+
+      - name: Build
+        run: dotnet build .\DropRenamer.sln -c Release --no-restore
+
+      - name: Publish self-contained Japanese executable
+        shell: pwsh
+        run: |
+          dotnet publish .\src\DropRenamer\DropRenamer.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -o .\release `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -p:Version=1.0.0
+          if (-not (Test-Path .\release\DropRenamer.exe)) {
+            throw "DropRenamer.exe was not produced."
+          }
+          Move-Item .\release\DropRenamer.exe .\release\DropRenamer-JP.exe
+
+      - name: Create SHA-256 checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash .\release\DropRenamer-JP.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  DropRenamer-JP.exe" | Set-Content .\release\SHA256SUMS-JP.txt -Encoding ascii
+
+      - name: Create Japanese GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          @"
+          ## ドロップリネーマー 日本語版 v1.0.0
+
+          日本語版の初回正式リリースです。
+
+          - Windows x64
+          - 自己完結型の単一EXE
+          - .NET 10ランタイム同梱
+          - .NETの別途インストール不要
+
+          `DropRenamer-JP.exe`をダウンロードして実行してください。コード署名を行っていないため、Windows SmartScreenの警告が表示される場合があります。
+          "@ | Set-Content .\release-notes-jp.md -Encoding utf8
+
+          gh release create jp-v1.0.0 `
+            .\release\DropRenamer-JP.exe `
+            .\release\SHA256SUMS-JP.txt `
+            --repo "${{ github.repository }}" `
+            --target "${{ github.sha }}" `
+            --title "ドロップリネーマー 日本語版 v1.0.0" `
+            --notes-file .\release-notes-jp.md `
+            --latest=false
