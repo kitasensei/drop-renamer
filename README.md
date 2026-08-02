@@ -1,53 +1,85 @@
-# ドロップリネーマー
+# Drop Renamer
 
-ファイルをドラッグ＆ドロップし、送り先のフォルダー名と連番を使って名前を整えるWindows用の小型アプリです。
+Drop Renamer is a small Windows app that renames files using the destination folder name and a sequential number.
 
-例：送り先が `旅行写真` フォルダーの場合
+Drop files onto the app, choose a destination folder, review the result, and run the operation.
+
+## Example
+
+If the destination folder is named `Travel Photos`:
 
 ```text
-旅行写真_001.jpg
-旅行写真_002.jpg
-旅行写真_003.png
+Travel Photos_001.jpg
+Travel Photos_002.jpg
+Travel Photos_003.png
 ```
 
-## 初期版の機能
+## Features
 
-- ファイルをアプリへドラッグ＆ドロップして追加
-- 送り先フォルダーをツリーから選択
-- 「コピー」「移動」を選択
-- 実行前に変更後のファイル名と保存場所を一覧表示
-- コピー元と送り先が同じファイルは対象外として表示
-- 選択した項目だけを一覧から削除
-- 同名ファイルがある場合は、空いている連番まで自動で進める
-- 前回の送り先フォルダーと処理方法を保存
-- ファイル単位で処理結果やエラーを表示
+- Add files by drag and drop
+- Choose the destination from a folder tree
+- Copy or move files while renaming them
+- Rename files in place when the source and destination folders are the same
+- Preview original names, new names, destinations, and operation status
+- Highlight in-place rename rows in orange
+- Skip occupied sequence numbers automatically
+- Remove selected items from the list
+- Remember the last destination and operation mode
+- Remember window position, size, and proportional detail-column layout
+- Reset the window to a visible position if a saved monitor is no longer available
+- Show a result or error for each file
 
-アプリ内にファイル選択ボタンはありません。処理対象は必ずドラッグ＆ドロップで渡します。
+There is intentionally no file picker. Files are always supplied by drag and drop.
 
-## 動作環境
+## Download
 
-- Windows 10 / 11
-- .NET 8 Desktop Runtime
+Download `DropRenamer.exe` from the latest GitHub Release.
 
-## 開発環境
+The Windows x64 executable is self-contained and includes the .NET 10 runtime. Users do not need to install .NET separately.
 
-- C#
-- WPF
-- .NET 8
-- Visual Studio 2022 または .NET 8 SDK
+Windows SmartScreen may show a warning because the executable is not code-signed.
 
-## ビルド
+## System requirements
+
+- Windows 10 or Windows 11
+- 64-bit Windows (x64)
+
+## Usage
+
+1. Run `DropRenamer.exe`.
+2. Drag files onto the window.
+3. Choose the destination folder.
+4. Select Copy or Move.
+5. Review the proposed names and destinations.
+6. Run the operation.
+
+Test with copies of important files before processing a large batch.
+
+## Build from source
+
+Requirements:
+
+- .NET 10 SDK
+- Windows, or a build environment that can target WPF
 
 ```powershell
 dotnet build DropRenamer.sln
 ```
 
-実行：
+Run from source:
 
 ```powershell
 dotnet run --project .\src\DropRenamer\DropRenamer.csproj
 ```
 
-## 現在の状態
+Create the self-contained Windows x64 executable:
 
-最初の動作版です。基本操作を一通り実装していますが、実機での操作確認と使い勝手の調整はこれから行います。
+```powershell
+dotnet publish .\src\DropRenamer\DropRenamer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -p:Version=1.0.0
+```
+
+## Technology
+
+- C#
+- WPF
+- .NET 10
