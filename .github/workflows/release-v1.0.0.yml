@@ -1,0 +1,81 @@
+name: Build and publish v1.0.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/release-v1.0.0.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore .\DropRenamer.sln
+
+      - name: Build
+        run: dotnet build .\DropRenamer.sln -c Release --no-restore
+
+      - name: Publish self-contained executable
+        shell: pwsh
+        run: |
+          dotnet publish .\src\DropRenamer\DropRenamer.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            --no-restore `
+            -o .\release `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -p:Version=1.0.0
+          if (-not (Test-Path .\release\DropRenamer.exe)) {
+            throw "DropRenamer.exe was not produced."
+          }
+
+      - name: Create SHA-256 checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash .\release\DropRenamer.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  DropRenamer.exe" | Set-Content .\release\SHA256SUMS.txt -Encoding ascii
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          @"
+          ## Drop Renamer v1.0.0
+
+          First completed English release.
+
+          - Windows x64
+          - Self-contained single executable
+          - Includes the .NET 10 runtime
+          - No separate .NET installation required
+
+          Download `DropRenamer.exe` and run it. Windows SmartScreen may warn because the executable is not code-signed.
+          "@ | Set-Content .\release-notes.md -Encoding utf8
+
+          gh release create v1.0.0 `
+            .\release\DropRenamer.exe `
+            .\release\SHA256SUMS.txt `
+            --repo "${{ github.repository }}" `
+            --target "${{ github.sha }}" `
+            --title "Drop Renamer v1.0.0" `
+            --notes-file .\release-notes.md
