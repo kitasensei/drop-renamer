@@ -26,6 +26,9 @@ public sealed class DetailColumnSettings
 
     public double Width { get; set; }
 
+    // Relative width used for dynamic resizing. Width remains for old settings migration.
+    public double Ratio { get; set; }
+
     public int DisplayIndex { get; set; }
 }
 
