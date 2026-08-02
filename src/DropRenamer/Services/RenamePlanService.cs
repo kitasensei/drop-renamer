@@ -30,8 +30,11 @@ public sealed class RenamePlanService
                 folderName = new DirectoryInfo(targetFolder).Root.Name.TrimEnd(Path.DirectorySeparatorChar);
             }
 
-            if (AreSameDirectory(Path.GetDirectoryName(item.OriginalPath), targetFolder)
-                && IsAlreadyRenamed(item.OriginalPath, folderName))
+            var renameInPlace = AreSameDirectory(
+                Path.GetDirectoryName(item.OriginalPath),
+                targetFolder);
+
+            if (renameInPlace && IsAlreadyRenamed(item.OriginalPath, folderName))
             {
                 item.NewName = string.Empty;
                 item.DestinationPath = string.Empty;
@@ -56,7 +59,8 @@ public sealed class RenamePlanService
             reservedPaths.Add(destinationPath);
             item.NewName = newName;
             item.DestinationPath = destinationPath;
-            item.Status = "実行待ち";
+            // Show the operation that will actually run, regardless of the selected mode.
+            item.Status = renameInPlace ? "リネーム（同じフォルダー）" : "実行待ち";
         }
     }
 
