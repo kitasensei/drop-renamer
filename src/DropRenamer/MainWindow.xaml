@@ -158,11 +158,11 @@
                                 <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Status}" Value="Rename (same folder)">
-                                        <Setter Property="Foreground" Value="#D97706" />
-                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding Status}" Value="Already renamed.">
                                         <Setter Property="Foreground" Value="#C62828" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="Rename (same folder)">
+                                        <Setter Property="Foreground" Value="#D97706" />
                                     </DataTrigger>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background"
@@ -195,22 +195,26 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn x:Name="OriginalNameColumn"
                                                 Width="1.15*"
+                                                MinWidth="100"
                                                 Header="Original Name"
                                                 Binding="{Binding OriginalName}"
                                                 CanUserSort="True"
                                                 SortMemberPath="OriginalName" />
                             <DataGridTextColumn x:Name="NewNameColumn"
                                                 Width="1.05*"
+                                                MinWidth="90"
                                                 Header="New Name"
                                                 Binding="{Binding NewName}"
                                                 CanUserSort="False" />
                             <DataGridTextColumn x:Name="DestinationColumn"
                                                 Width="1.55*"
+                                                MinWidth="115"
                                                 Header="Destination"
                                                 Binding="{Binding DestinationPath}"
                                                 CanUserSort="False" />
                             <DataGridTextColumn x:Name="StatusColumn"
                                                 Width="1.25*"
+                                                MinWidth="115"
                                                 Header="Status"
                                                 Binding="{Binding Status}"
                                                 CellStyle="{StaticResource StatusCellStyle}"
