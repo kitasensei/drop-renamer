@@ -1,3 +1,11 @@
+// Changes from the initial .NET 10 version:
+// - Show "Rename (same folder)" when the actual operation is an in-place rename.
+// - Display that operation in orange so it is distinct from red warnings.
+// - Show all four detail headers in the default layout.
+// - Save and restore the window size, position, state, and detail-column layout.
+// - Reset an off-screen saved window position to the default centered position.
+// - Dynamically fill the detail grid by saving column-width ratios with minimum widths.
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -52,6 +60,9 @@ public partial class MainWindow : Window
 
     private void RestoreSettings()
     {
+        RestoreWindowLayout();
+        RestoreDetailColumnLayout();
+
         SelectedDestination = Directory.Exists(_settings.LastDestinationPath)
             ? _settings.LastDestinationPath
             : null;
@@ -68,6 +79,165 @@ public partial class MainWindow : Window
 
         UpdateDestinationDisplay();
         RestoreFolderTreeSelection();
+    }
+
+    private void RestoreWindowLayout()
+    {
+        if (!_settings.WindowLeft.HasValue
+            || !_settings.WindowTop.HasValue
+            || !_settings.WindowWidth.HasValue
+            || !_settings.WindowHeight.HasValue)
+        {
+            return;
+        }
+
+        var width = _settings.WindowWidth.Value;
+        var height = _settings.WindowHeight.Value;
+        var left = _settings.WindowLeft.Value;
+        var top = _settings.WindowTop.Value;
+
+        if (!IsValidDimension(width, MinWidth)
+            || !IsValidDimension(height, MinHeight)
+            || !IsSavedWindowVisible(left, top, width, height))
+        {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            return;
+        }
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = left;
+        Top = top;
+        Width = width;
+        Height = height;
+    }
+
+    private void RestoreDetailColumnLayout()
+    {
+        var columnsByKey = GetDetailColumns().ToDictionary(entry => entry.Key, entry => entry.Column);
+        var validSettings = (_settings.DetailColumns ?? [])
+            .Where(setting => columnsByKey.ContainsKey(setting.Key)
+                              && setting.DisplayIndex >= 0
+                              && setting.DisplayIndex < columnsByKey.Count)
+            .GroupBy(setting => setting.Key)
+            .Select(group => group.First())
+            .ToList();
+
+        if (validSettings.Count != columnsByKey.Count
+            || validSettings.Select(setting => setting.DisplayIndex).Distinct().Count()
+                != columnsByKey.Count)
+        {
+            return;
+        }
+
+        var savedSizes = validSettings.Select(setting =>
+        {
+            if (double.IsFinite(setting.Ratio) && setting.Ratio > 0)
+            {
+                return setting.Ratio;
+            }
+
+            // Migrate layout values saved by the earlier fixed-pixel-width version.
+            return double.IsFinite(setting.Width) && setting.Width >= 40
+                ? setting.Width
+                : double.NaN;
+        }).ToList();
+
+        if (savedSizes.Any(size => !double.IsFinite(size) || size <= 0))
+        {
+            return;
+        }
+
+        var totalSize = savedSizes.Sum();
+        if (!double.IsFinite(totalSize) || totalSize <= 0)
+        {
+            return;
+        }
+
+        foreach (var entry in validSettings
+                     .Zip(savedSizes)
+                     .OrderBy(entry => entry.First.DisplayIndex))
+        {
+            var setting = entry.First;
+            var column = columnsByKey[setting.Key];
+            column.Width = new DataGridLength(
+                entry.Second / totalSize,
+                DataGridLengthUnitType.Star);
+            column.DisplayIndex = setting.DisplayIndex;
+        }
+    }
+
+    private static bool IsValidDimension(double value, double minimum) =>
+        double.IsFinite(value) && value >= minimum;
+
+    private static bool IsSavedWindowVisible(double left, double top, double width, double height)
+    {
+        if (!double.IsFinite(left) || !double.IsFinite(top))
+        {
+            return false;
+        }
+
+        var virtualLeft = SystemParameters.VirtualScreenLeft;
+        var virtualTop = SystemParameters.VirtualScreenTop;
+        var virtualRight = virtualLeft + SystemParameters.VirtualScreenWidth;
+        var virtualBottom = virtualTop + SystemParameters.VirtualScreenHeight;
+        var intersectionWidth = Math.Min(left + width, virtualRight) - Math.Max(left, virtualLeft);
+        var intersectionHeight = Math.Min(top + height, virtualBottom) - Math.Max(top, virtualTop);
+
+        return intersectionWidth >= Math.Min(120, width)
+               && intersectionHeight >= Math.Min(80, height);
+    }
+
+    private IEnumerable<(string Key, DataGridColumn Column)> GetDetailColumns()
+    {
+        yield return ("OriginalName", OriginalNameColumn);
+        yield return ("NewName", NewNameColumn);
+        yield return ("Destination", DestinationColumn);
+        yield return ("Status", StatusColumn);
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (_settings.IsWindowMaximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
+
+    private void Window_Closing(object? sender, CancelEventArgs e)
+    {
+        SaveLayoutSettings();
+        SaveSettings();
+    }
+
+    private void SaveLayoutSettings()
+    {
+        var bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, ActualWidth, ActualHeight)
+            : RestoreBounds;
+
+        if (IsValidDimension(bounds.Width, MinWidth)
+            && IsValidDimension(bounds.Height, MinHeight))
+        {
+            _settings.WindowLeft = bounds.Left;
+            _settings.WindowTop = bounds.Top;
+            _settings.WindowWidth = bounds.Width;
+            _settings.WindowHeight = bounds.Height;
+        }
+
+        _settings.IsWindowMaximized = WindowState == WindowState.Maximized;
+        var detailColumns = GetDetailColumns().ToList();
+        var totalColumnWidth = detailColumns.Sum(entry => entry.Column.ActualWidth);
+        _settings.DetailColumns = detailColumns
+            .Select(entry => new DetailColumnSettings
+            {
+                Key = entry.Key,
+                Width = entry.Column.ActualWidth,
+                Ratio = double.IsFinite(totalColumnWidth) && totalColumnWidth > 0
+                    ? entry.Column.ActualWidth / totalColumnWidth
+                    : 0,
+                DisplayIndex = entry.Column.DisplayIndex
+            })
+            .ToList();
     }
 
     private void RestoreFolderTreeSelection()
