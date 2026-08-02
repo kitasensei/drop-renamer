@@ -4,6 +4,7 @@
 // - Show all four detail headers in the default layout.
 // - Save and restore the window size, position, state, and detail-column layout.
 // - Reset an off-screen saved window position to the default centered position.
+// - Dynamically fill the detail grid by saving column-width ratios with minimum widths.
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -115,8 +116,6 @@ public partial class MainWindow : Window
         var columnsByKey = GetDetailColumns().ToDictionary(entry => entry.Key, entry => entry.Column);
         var validSettings = (_settings.DetailColumns ?? [])
             .Where(setting => columnsByKey.ContainsKey(setting.Key)
-                              && double.IsFinite(setting.Width)
-                              && setting.Width >= 40
                               && setting.DisplayIndex >= 0
                               && setting.DisplayIndex < columnsByKey.Count)
             .GroupBy(setting => setting.Key)
@@ -130,10 +129,39 @@ public partial class MainWindow : Window
             return;
         }
 
-        foreach (var setting in validSettings.OrderBy(setting => setting.DisplayIndex))
+        var savedSizes = validSettings.Select(setting =>
         {
+            if (double.IsFinite(setting.Ratio) && setting.Ratio > 0)
+            {
+                return setting.Ratio;
+            }
+
+            // Migrate layout values saved by the earlier fixed-pixel-width version.
+            return double.IsFinite(setting.Width) && setting.Width >= 40
+                ? setting.Width
+                : double.NaN;
+        }).ToList();
+
+        if (savedSizes.Any(size => !double.IsFinite(size) || size <= 0))
+        {
+            return;
+        }
+
+        var totalSize = savedSizes.Sum();
+        if (!double.IsFinite(totalSize) || totalSize <= 0)
+        {
+            return;
+        }
+
+        foreach (var entry in validSettings
+                     .Zip(savedSizes)
+                     .OrderBy(entry => entry.First.DisplayIndex))
+        {
+            var setting = entry.First;
             var column = columnsByKey[setting.Key];
-            column.Width = new DataGridLength(setting.Width);
+            column.Width = new DataGridLength(
+                entry.Second / totalSize,
+                DataGridLengthUnitType.Star);
             column.DisplayIndex = setting.DisplayIndex;
         }
     }
@@ -197,11 +225,16 @@ public partial class MainWindow : Window
         }
 
         _settings.IsWindowMaximized = WindowState == WindowState.Maximized;
-        _settings.DetailColumns = GetDetailColumns()
+        var detailColumns = GetDetailColumns().ToList();
+        var totalColumnWidth = detailColumns.Sum(entry => entry.Column.ActualWidth);
+        _settings.DetailColumns = detailColumns
             .Select(entry => new DetailColumnSettings
             {
                 Key = entry.Key,
                 Width = entry.Column.ActualWidth,
+                Ratio = double.IsFinite(totalColumnWidth) && totalColumnWidth > 0
+                    ? entry.Column.ActualWidth / totalColumnWidth
+                    : 0,
                 DisplayIndex = entry.Column.DisplayIndex
             })
             .ToList();
